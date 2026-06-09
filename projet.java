@@ -1,43 +1,39 @@
-import java.util.Scanner;
+import java.util.*;
 
 class Account {
-    double balance;
+    private double balance;
 
     // Constructor
-    Account(double b) {
-        balance = b;
+    Account(double balance) {
+        this.balance = balance;
     }
 
-    // Method to withdraw money
-    void withdraw(double amount) {
-        if (amount > 0 && amount <= balance) {
-            balance = balance - amount;
-            System.out.println("Transaction successful");
-        } else {
-            System.out.println("Invalid or insufficient balance");
+    // Getter
+    public double getBalance() {
+        return balance;
+    }
+
+    // Withdraw method
+    public void withdraw(double amount) throws Exception {
+        if (amount <= 0) {
+            throw new Exception("Invalid amount");
         }
-    }
-
-    // Method to check balance
-    void showBalance() {
-        System.out.println("Balance: " + balance);
+        if (amount > balance) {
+            throw new Exception("Insufficient balance");
+        }
+        balance -= amount;
+        System.out.println("Transaction successful");
     }
 }
 
 class ATM {
-    int pin = 1234;
+    static int PIN = 1234;
 
-    // Method to check PIN
-    boolean checkPin(int enteredPin) {
-        if (enteredPin == pin) {
-            return true;
-        } else {
-            return false;
-        }
+    public boolean authenticate(int enteredPin) {
+        return enteredPin == PIN;
     }
 
-    // Menu method
-    void menu(Account acc) {
+    public void showMenu(Account acc) {
         Scanner sc = new Scanner(System.in);
 
         while (true) {
@@ -46,22 +42,36 @@ class ATM {
             System.out.println("3. Exit");
             System.out.print("Enter choice: ");
 
-            int choice = sc.nextInt();
+            try {
+                int choice = sc.nextInt();
 
-            if (choice == 1) {
-                System.out.print("Enter amount: ");
-                double amt = sc.nextDouble();
-                acc.withdraw(amt);
+                switch (choice) {
+                    case 1:
+                        System.out.print("Enter amount: ");
+                        double amount = sc.nextDouble();
 
-            } else if (choice == 2) {
-                acc.showBalance();
+                        try {
+                            acc.withdraw(amount);
+                        } catch (Exception e) {
+                            System.out.println("Error: " + e.getMessage());
+                        }
+                        break;
 
-            } else if (choice == 3) {
-                System.out.println("Thank you for using ATM");
-                break;
+                    case 2:
+                        System.out.println("Balance: " + acc.getBalance());
+                        break;
 
-            } else {
-                System.out.println("Invalid choice");
+                    case 3:
+                        System.out.println("Thank you for using ATM");
+                        return;
+
+                    default:
+                        System.out.println("Invalid choice");
+                }
+
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Invalid input");
+                sc.next(); // clear buffer
             }
         }
     }
@@ -71,16 +81,16 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        Account acc = new Account(2000);
+        Account acc = new Account(2000); // initial balance
         ATM atm = new ATM();
 
         System.out.print("Enter PIN: ");
-        int pin = sc.nextInt();
+        int enteredPin = sc.nextInt();
 
-        if (atm.checkPin(pin)) {
-            atm.menu(acc);
+        if (atm.authenticate(enteredPin)) {
+            atm.showMenu(acc);
         } else {
-            System.out.println("Wrong PIN");
+            System.out.println("Incorrect PIN. Access denied.");
         }
     }
 }
